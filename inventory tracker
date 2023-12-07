@@ -1,0 +1,300 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<sstream>
+#include<fstream>
+using namespace std;
+
+class product
+{
+    private:
+        int id;
+        string name;
+        double price;
+        int quantity;
+    
+    public:
+        product(int id, string name, double price, int quantity)
+        {
+            this->id=id;
+            this->name=name;
+            this->price=price;
+            this->quantity=quantity;
+        }
+
+        int getid() const{
+            return id;
+        }
+
+        void setid(int id){
+            this->id=id;
+        }
+
+        string getname() const{
+            return name;
+        }
+
+        void setname(string name){
+            this->name=name;
+        }
+        double getprice() const{
+            return price;
+        }
+
+        void setprice(double price){
+            this->price=price;
+        }
+
+        int getquantity() const{
+            return quantity;
+        }
+
+        void setquantity(int quantity){
+            this->quantity=quantity;
+        }
+};
+
+class inventory
+{
+    private:
+        vector<product> products;
+    
+    public:
+        void addproduct(product product)
+        {
+            bool found = false;
+            for (auto& p : products)
+            {
+                if (p.getid() == product.getid())
+                {
+                    cout << "id already exist."<< endl;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                products.push_back(product);
+                cout << "product added successfully." << endl;
+            }
+        }            
+
+        void removeproduct(int id)
+        {
+            bool found = false;
+            for (auto i = products.begin(); i != products.end(); i++)
+            {
+                if (i->getid() == id)
+                {
+                    products.erase(i);
+                    found = true;
+                    cout << "product removed successfully." << endl;        
+                    break;
+                }
+            }
+            if (!found)
+            {
+                cout << "id does not exist" << endl;
+            }
+        }
+
+        product* findproduct(int id)
+        {
+            for(auto i=products.begin();i!=products.end();i++)
+            {
+                if(i->getid()==id)
+                {
+                    return &(*i);
+                }
+            }
+            return nullptr;
+        }
+
+        void updateproduct(int id, string name, double price, int quantity)
+        {
+            bool found = false;
+            for (auto i = products.begin(); i != products.end(); i++)
+            {
+                if (i->getid() == id)
+                {
+                    i->setname(name);
+                    i->setprice(price);
+                    i->setquantity(quantity);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                cout << "id does not exist." << endl;
+            }
+        }        
+
+        void printproduct() const{
+            for(auto i=products.begin();i!=products.end();i++)
+            {
+                cout<<"ID : "<<i->getid()<<endl;
+                cout<<"Name : "<<i->getname()<<endl;               
+                cout<<"Price : Rs"<<i->getprice()<<endl;
+                cout<<"Quantity : "<<i->getquantity()<<endl;
+            }
+        }
+
+        void saveinventorytofile(string filename) 
+        {
+          ofstream file;
+           file.open(filename);
+
+          if (file.is_open()) 
+          {
+          for (const product& p : products) 
+          {
+            file << "ID: " << p.getid() << "\n";
+            file << "Name: " << p.getname() << "\n";
+            file << "Price: Rs" << p.getprice() << "\n";
+            file << "Quantity: " << p.getquantity() << "\n\n";
+          }
+          file.close();
+          cout << "inventory data saved to text file successfully.\n";
+         }  
+    else
+    {
+        cout << "unable to create/open the file.\n";
+    }
+}
+
+
+     void loadinventoryfromfile(string filename) {
+    ifstream file;
+    file.open(filename);
+
+    if (file.is_open()) {
+        products.clear(); 
+
+        string line;
+        while (getline(file, line)) {
+            string attribute, value;
+            stringstream ss(line);
+
+            getline(ss, attribute, ':');
+            getline(ss, value);
+
+            if (attribute == "ID") {
+                int id = stoi(value);
+                string name;
+                double price;
+                int quantity;
+                getline(file, line); 
+                stringstream ss_name(line);
+                getline(ss_name, attribute, ':');
+                getline(ss_name, name);
+                product p(id, name, price, quantity);
+                products.push_back(p);
+            }
+        }
+        file.close();
+        cout << "inventory data loaded from text file successfully.\n";
+    } else {
+        cout << "error: Could not open file " << filename << endl;
+    }
+}
+};
+
+int main() {
+    inventory inventory;
+    cout << "inventory management system" <<endl;   
+    int choice;
+    do {
+        cout << "please choose an option:" << endl;
+        cout << "1. Add a product" << endl;
+        cout << "2. Remove a product" << endl;
+        cout << "3. Find a product" << endl;
+        cout << "4. Update a product" << endl;
+        cout << "5. View all products" << endl;
+        cout << "6. Save inventory to file" << endl;
+        cout << "7. Load Inventory from file" << endl;
+        cin >> choice;
+
+        switch (choice) {
+        case 1: {
+            int id;
+            string name, category;
+            double price;
+            int quantity;
+            cout << "Enter ID: ";
+            cin >> id;
+            cout << "Enter product name: ";
+            cin >> name;
+            cout << "Enter product price: Rs ";
+            cin >> price;
+            cout << "Enter product quantity: ";
+            cin >> quantity;
+            product product(id, name,  price, quantity);
+            inventory.addproduct(product);
+            break;
+        }
+
+        case 2: {
+            int id;
+            cout << "Enter product id: ";
+            cin >> id;
+            inventory.removeproduct(id);
+            break;
+        }
+
+        case 3: {
+            int id;
+            cout << "Enter product id: ";
+            cin >> id;
+            product* product = inventory.findproduct(id);
+            if (product) {
+                cout << "Name: " << product->getname() << endl;
+                cout << "Price: Rs " << product->getprice() << endl;
+                cout << "Quantity: " << product->getquantity() << endl;
+            }
+            else {
+                cout << "product not found." << endl;
+            }
+            break;
+        }
+
+        case 4: {
+            int id;
+            string name;
+            double price;
+            int quantity;
+            cout << "Enter the product id: ";
+            cin >> id;
+            cout << "Enter new product name: ";
+            cin >> name;
+            cout << "Enter new product price: Rs ";
+            cin >> price;
+            cout << "Enter new product quantity: ";
+            cin >> quantity;
+            inventory.updateproduct(id, name, price, quantity);
+            cout << "product updated successfully." << endl;
+            break;
+        }
+
+        case 5: {
+            inventory.printproduct();
+            break;
+        }
+        case 6: {
+            inventory.saveinventorytofile("inventory.txt");
+            cout << "inventory saved to file." << endl;
+            break;
+        }
+        case 7: {
+            inventory.loadinventoryfromfile("inventory.txt");
+            cout << "inventory loaded from file." << endl;
+            break;
+        }
+        default:
+            cout << "invalid Choice. please try again" << endl;
+            break;
+        }
+    } while (choice!=8);
+
+    return 0;
+}
